@@ -10,6 +10,20 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped
+    depends_on:
+      - popcornhub-backend
+    networks:
+      - popcornhub-network
+
+  popcornhub-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    restart: unless-stopped
     networks:
       - popcornhub-network
 

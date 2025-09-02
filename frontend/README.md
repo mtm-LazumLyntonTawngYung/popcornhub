@@ -1,59 +1,124 @@
-# Frontend
+# PopcornHub Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.1.
+The frontend application for PopcornHub, a movie discovery and chat platform built with Angular.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Movie Browsing**: Browse and search through a collection of movies
+- **Movie Details**: View detailed information about movies including cast, ratings, and trailers
+- **AI Chat**: Interactive chat feature for movie recommendations
+- **User Authentication**: Secure login and user management with Firebase
+- **Watchlist**: Save movies to your personal watchlist
+- **Responsive Design**: Optimized for desktop and mobile devices using Tailwind CSS
+
+## Prerequisites
+
+- Node.js (v16 or higher)
+- Angular CLI (v15 or higher)
+- Backend API server running (see backend README)
+
+## Installation
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure environment variables:
+   - Copy `src/environments/environment.ts` to `environment.prod.ts` if needed
+   - Update API endpoints to point to your backend server
+
+## Development Server
+
+To start the development server:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The application will be available at `http://localhost:4200`.
 
-## Code scaffolding
+Note: Ensure the backend server is running on `http://localhost:5000` for full functionality.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Build
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+To build the project for production:
 
 ```bash
-ng generate --help
+ng build --prod
 ```
 
-## Building
+The build artifacts will be stored in the `dist/` directory.
 
-To build the project run:
+## Testing
 
-```bash
-ng build
-```
+### Unit Tests
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+To execute unit tests with Karma:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+### End-to-End Tests
 
-For end-to-end (e2e) testing, run:
+For end-to-end testing:
 
 ```bash
 ng e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Code Scaffolding
 
-## Additional Resources
+Angular CLI includes powerful code scaffolding tools. To generate a new component:
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics:
+
+```bash
+ng generate --help
+```
+
+## Technologies Used
+
+- Angular 17+
+- TypeScript
+- Tailwind CSS
+- Firebase Authentication
+- RxJS for reactive programming
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── core/           # Core services and guards
+│   ├── shared/         # Shared components and utilities
+│   ├── features/       # Feature modules
+│   │   ├── auth/       # Authentication components
+│   │   ├── movies/     # Movie-related components
+│   │   └── chat/       # Chat functionality
+│   └── app.config.ts   # Application configuration
+├── assets/             # Static assets
+├── environments/       # Environment configurations
+└── styles.css          # Global styles
+```
+
+## Contributing
+
+1. Follow Angular style guidelines
+2. Write unit tests for new components
+3. Ensure responsive design works on mobile devices
+4. Test with the backend API
+
+## License
+
+This project is licensed under the MIT License.

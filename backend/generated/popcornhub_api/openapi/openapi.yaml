@@ -1,0 +1,566 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: support@popcornhub.com
+    name: PopcornHub Team
+  description: Movie discovery and chat application API
+  title: PopcornHub API
+  version: 1.0.0
+servers:
+- description: Development server
+  url: http://localhost:5000/api
+- description: Production server
+  url: https://api.popcornhub.com/api
+paths:
+  /ai-chat:
+    post:
+      description: Get movie recommendations through AI chat
+      operationId: ai_chat_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_ai_chat_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+          description: AI chat response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request
+      summary: AI movie chat
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+  /health:
+    get:
+      description: Check if the API is running
+      operationId: health_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_health_get_200_response"
+          description: API is healthy
+      summary: Health check
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+  /movies:
+    get:
+      description: Retrieve a list of movies with optional filtering
+      operationId: movies_get
+      parameters:
+      - description: Search query for movie title or description
+        explode: true
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by genre
+        explode: true
+        in: query
+        name: genre
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Maximum number of movies to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          type: integer
+        style: form
+      - description: Number of movies to skip
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Movie"
+                type: array
+          description: List of movies
+      summary: Get movies
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+  /movies/recommendations:
+    get:
+      description: Retrieve personalized movie recommendations
+      operationId: movies_recommendations_get
+      parameters:
+      - description: Maximum number of recommendations to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Movie"
+                type: array
+          description: List of recommended movies
+      summary: Get movie recommendations
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+  /movies/search:
+    get:
+      description: "Search for movies by title, description, or other criteria"
+      operationId: movies_search_get
+      parameters:
+      - description: Search query
+        explode: true
+        in: query
+        name: q
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Maximum number of results to return
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/MovieSuggestion"
+                type: array
+          description: Search results
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request
+      summary: Search movies
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+  /movies/{movieId}:
+    get:
+      description: Retrieve detailed information about a specific movie
+      operationId: movies_movie_id_get
+      parameters:
+      - description: Movie ID
+        explode: false
+        in: path
+        name: movieId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+          description: Movie details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Movie not found
+      summary: Get movie by ID
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+  /watchlist:
+    delete:
+      description: Remove a movie from the current user's watchlist
+      operationId: watchlist_delete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchlistRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_watchlist_delete_200_response"
+          description: Movie removed from watchlist
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+      summary: Remove movie from watchlist
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+    get:
+      description: Retrieve the current user's watchlist
+      operationId: watchlist_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  example: 1
+                  type: integer
+                type: array
+          description: User's watchlist
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+      summary: Get user watchlist
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+    post:
+      description: Add a movie to the current user's watchlist
+      operationId: watchlist_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchlistRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_watchlist_post_200_response"
+          description: Movie added to watchlist
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Bad request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+      summary: Add movie to watchlist
+      x-openapi-router-controller: popcornhub_api.controllers.default_controller
+components:
+  schemas:
+    Movie:
+      example:
+        director: Christopher Nolan
+        rating: 8.8
+        description: A thief who steals corporate secrets through the use of dream-sharing
+          technology...
+        title: Inception
+        trailerUrl: https://www.youtube.com/embed/YoHD9XEInc0
+        duration: 148 min
+        cast:
+        - image: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=DiCaprio
+          role: Dom Cobb
+          name: Leonardo DiCaprio
+        - image: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=DiCaprio
+          role: Dom Cobb
+          name: Leonardo DiCaprio
+        relatedMovies:
+        - rating: 8.6
+          id: 2
+          title: Interstellar
+          poster: https://via.placeholder.com/300x450/1a1a1a/ffffff?text=Interstellar
+        - rating: 8.6
+          id: 2
+          title: Interstellar
+          poster: https://via.placeholder.com/300x450/1a1a1a/ffffff?text=Interstellar
+        awards:
+        - Academy Award for Best Cinematography
+        genre:
+        - Sci-Fi
+        - Action
+        - Thriller
+        id: 1
+        releaseYear: 2010
+        poster: https://via.placeholder.com/600x900/1a1a1a/ffffff?text=Inception+Poster
+      properties:
+        id:
+          example: 1
+          title: id
+          type: integer
+        title:
+          example: Inception
+          title: title
+          type: string
+        description:
+          example: A thief who steals corporate secrets through the use of dream-sharing
+            technology...
+          title: description
+          type: string
+        genre:
+          example:
+          - Sci-Fi
+          - Action
+          - Thriller
+          items:
+            type: string
+          title: genre
+          type: array
+        rating:
+          example: 8.8
+          format: float
+          title: rating
+          type: number
+        releaseYear:
+          example: 2010
+          title: releaseYear
+          type: integer
+        duration:
+          example: 148 min
+          title: duration
+          type: string
+        director:
+          example: Christopher Nolan
+          title: director
+          type: string
+        cast:
+          items:
+            $ref: "#/components/schemas/CastMember"
+          title: cast
+          type: array
+        poster:
+          example: https://via.placeholder.com/600x900/1a1a1a/ffffff?text=Inception+Poster
+          format: uri
+          title: poster
+          type: string
+        trailerUrl:
+          example: https://www.youtube.com/embed/YoHD9XEInc0
+          format: uri
+          title: trailerUrl
+          type: string
+        relatedMovies:
+          items:
+            $ref: "#/components/schemas/RelatedMovie"
+          title: relatedMovies
+          type: array
+        awards:
+          example:
+          - Academy Award for Best Cinematography
+          items:
+            type: string
+          title: awards
+          type: array
+      title: Movie
+      type: object
+    CastMember:
+      example:
+        image: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=DiCaprio
+        role: Dom Cobb
+        name: Leonardo DiCaprio
+      properties:
+        name:
+          example: Leonardo DiCaprio
+          title: name
+          type: string
+        role:
+          example: Dom Cobb
+          title: role
+          type: string
+        image:
+          example: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=DiCaprio
+          format: uri
+          title: image
+          type: string
+      title: CastMember
+      type: object
+    RelatedMovie:
+      example:
+        rating: 8.6
+        id: 2
+        title: Interstellar
+        poster: https://via.placeholder.com/300x450/1a1a1a/ffffff?text=Interstellar
+      properties:
+        id:
+          example: 2
+          title: id
+          type: integer
+        title:
+          example: Interstellar
+          title: title
+          type: string
+        poster:
+          example: https://via.placeholder.com/300x450/1a1a1a/ffffff?text=Interstellar
+          format: uri
+          title: poster
+          type: string
+        rating:
+          example: 8.6
+          format: float
+          title: rating
+          type: number
+      title: RelatedMovie
+      type: object
+    MovieSuggestion:
+      example:
+        year: 2010
+        rating: 8.8
+        id: 1
+        title: Inception
+        poster: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception
+      properties:
+        id:
+          example: 1
+          title: id
+          type: integer
+        title:
+          example: Inception
+          title: title
+          type: string
+        poster:
+          example: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception
+          format: uri
+          title: poster
+          type: string
+        year:
+          example: 2010
+          title: year
+          type: integer
+        rating:
+          example: 8.8
+          format: float
+          title: rating
+          type: number
+      title: MovieSuggestion
+      type: object
+    ChatResponse:
+      example:
+        suggestions:
+        - year: 2010
+          rating: 8.8
+          id: 1
+          title: Inception
+          poster: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception
+        - year: 2010
+          rating: 8.8
+          id: 1
+          title: Inception
+          poster: https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception
+        text: "Based on popular trends, here are some great recommendations:"
+      properties:
+        text:
+          example: "Based on popular trends, here are some great recommendations:"
+          title: text
+          type: string
+        suggestions:
+          items:
+            $ref: "#/components/schemas/MovieSuggestion"
+          title: suggestions
+          type: array
+      title: ChatResponse
+      type: object
+    WatchlistRequest:
+      example:
+        movie_id: 1
+      properties:
+        movie_id:
+          example: 1
+          title: movie_id
+          type: integer
+      required:
+      - movie_id
+      title: WatchlistRequest
+      type: object
+    Error:
+      example:
+        error: Movie not found
+        message: The requested movie could not be found
+      properties:
+        error:
+          example: Movie not found
+          title: error
+          type: string
+        message:
+          example: The requested movie could not be found
+          title: message
+          type: string
+      title: Error
+      type: object
+    _health_get_200_response:
+      example:
+        status: healthy
+      properties:
+        status:
+          example: healthy
+          title: status
+          type: string
+      title: _health_get_200_response
+      type: object
+    _ai_chat_post_request:
+      properties:
+        message:
+          example: Recommend some action movies
+          title: message
+          type: string
+      required:
+      - message
+      title: _ai_chat_post_request
+      type: object
+    _watchlist_post_200_response:
+      example:
+        message: Movie added to watchlist
+      properties:
+        message:
+          example: Movie added to watchlist
+          title: message
+          type: string
+      title: _watchlist_post_200_response
+      type: object
+    _watchlist_delete_200_response:
+      example:
+        message: Movie removed from watchlist
+      properties:
+        message:
+          example: Movie removed from watchlist
+          title: message
+          type: string
+      title: _watchlist_delete_200_response
+      type: object
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: popcornhub_api.controllers.security_controller.info_from_BearerAuth

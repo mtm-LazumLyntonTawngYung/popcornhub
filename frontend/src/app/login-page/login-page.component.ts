@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 

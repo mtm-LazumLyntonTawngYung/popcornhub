@@ -1,0 +1,420 @@
+openapi: 3.0.3
+info:
+  title: PopcornHub API
+  description: Movie discovery and chat application API
+  version: 1.0.0
+  contact:
+    name: PopcornHub Team
+    email: support@popcornhub.com
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+  - url: https://api.popcornhub.com/api
+    description: Production server
+
+components:
+  schemas:
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Inception"
+        description:
+          type: string
+          example: "A thief who steals corporate secrets through the use of dream-sharing technology..."
+        genre:
+          type: array
+          items:
+            type: string
+          example: ["Sci-Fi", "Action", "Thriller"]
+        rating:
+          type: number
+          format: float
+          example: 8.8
+        releaseYear:
+          type: integer
+          example: 2010
+        duration:
+          type: string
+          example: "148 min"
+        director:
+          type: string
+          example: "Christopher Nolan"
+        cast:
+          type: array
+          items:
+            $ref: '#/components/schemas/CastMember'
+        poster:
+          type: string
+          format: uri
+          example: "https://via.placeholder.com/600x900/1a1a1a/ffffff?text=Inception+Poster"
+        trailerUrl:
+          type: string
+          format: uri
+          example: "https://www.youtube.com/embed/YoHD9XEInc0"
+        relatedMovies:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedMovie'
+        awards:
+          type: array
+          items:
+            type: string
+          example: ["Academy Award for Best Cinematography"]
+
+    CastMember:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Leonardo DiCaprio"
+        role:
+          type: string
+          example: "Dom Cobb"
+        image:
+          type: string
+          format: uri
+          example: "https://via.placeholder.com/100x150/1a1a1a/ffffff?text=DiCaprio"
+
+    RelatedMovie:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        title:
+          type: string
+          example: "Interstellar"
+        poster:
+          type: string
+          format: uri
+          example: "https://via.placeholder.com/300x450/1a1a1a/ffffff?text=Interstellar"
+        rating:
+          type: number
+          format: float
+          example: 8.6
+
+    MovieSuggestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Inception"
+        poster:
+          type: string
+          format: uri
+          example: "https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception"
+        year:
+          type: integer
+          example: 2010
+        rating:
+          type: number
+          format: float
+          example: 8.8
+
+    ChatResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "Based on popular trends, here are some great recommendations:"
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieSuggestion'
+
+    WatchlistRequest:
+      type: object
+      required:
+        - movie_id
+      properties:
+        movie_id:
+          type: integer
+          example: 1
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Movie not found"
+        message:
+          type: string
+          example: "The requested movie could not be found"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Check if the API is running
+      operationId: health_get
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+
+  /movies:
+    get:
+      summary: Get movies
+      description: Retrieve a list of movies with optional filtering
+      operationId: movies_get
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search query for movie title or description
+        - name: genre
+          in: query
+          schema:
+            type: string
+          description: Filter by genre
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Maximum number of movies to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Number of movies to skip
+      responses:
+        '200':
+          description: List of movies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+
+  /movies/{movieId}:
+    get:
+      summary: Get movie by ID
+      description: Retrieve detailed information about a specific movie
+      operationId: movies_movie_id_get
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Movie ID
+      responses:
+        '200':
+          description: Movie details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /movies/recommendations:
+    get:
+      summary: Get movie recommendations
+      description: Retrieve personalized movie recommendations
+      operationId: movies_recommendations_get
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Maximum number of recommendations to return
+      responses:
+        '200':
+          description: List of recommended movies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+
+  /movies/search:
+    get:
+      summary: Search movies
+      description: Search for movies by title, description, or other criteria
+      operationId: movies_search_get
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Maximum number of results to return
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovieSuggestion'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai-chat:
+    post:
+      summary: AI movie chat
+      description: Get movie recommendations through AI chat
+      operationId: ai_chat_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  example: "Recommend some action movies"
+      responses:
+        '200':
+          description: AI chat response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /watchlist:
+    get:
+      summary: Get user watchlist
+      description: Retrieve the current user's watchlist
+      operationId: watchlist_get
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User's watchlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  example: 1
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Add movie to watchlist
+      description: Add a movie to the current user's watchlist
+      operationId: watchlist_post
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchlistRequest'
+      responses:
+        '200':
+          description: Movie added to watchlist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Movie added to watchlist"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Remove movie from watchlist
+      description: Remove a movie from the current user's watchlist
+      operationId: watchlist_delete
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchlistRequest'
+      responses:
+        '200':
+          description: Movie removed from watchlist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Movie removed from watchlist"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
