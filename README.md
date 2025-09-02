@@ -56,6 +56,17 @@ ng build --prod
 
 To run the application using Docker:
 
+### Using Docker Compose (Recommended)
+
+1. Build and run the application:
+   ```bash
+   docker-compose up --build
+   ```
+
+The application will be available at `http://localhost:8080`.
+
+### Using Docker Commands
+
 1. Build the Docker image:
    ```bash
    docker build -t popcornhub-frontend .
