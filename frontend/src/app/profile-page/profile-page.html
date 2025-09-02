@@ -1,0 +1,252 @@
+<!-- Main container with dark theme background -->
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Page Header -->
+    <header class="text-center mb-12 animate-fade-in">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+        My Profile
+      </h1>
+      <p class="text-slate-300 text-lg">Manage your account and preferences</p>
+    </header>
+
+    <!-- User Profile Section -->
+    <section class="mb-12" aria-labelledby="profile-heading">
+      <h2 id="profile-heading" class="text-2xl font-semibold mb-6 text-red-400">User Profile</h2>
+      <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-slate-700 hover:shadow-2xl transition-all duration-300">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+          <!-- Avatar Section -->
+          <div class="flex flex-col items-center">
+            <div class="relative group">
+              <img [src]="userProfile.avatar || 'https://via.placeholder.com/150x150?text=No+Avatar'"
+                   alt="Profile Avatar"
+                   class="w-32 h-32 rounded-full object-cover border-4 border-red-500 shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <button (click)="openAvatarInput()"
+                        class="text-white text-sm font-medium"
+                        aria-label="Change avatar">
+                  Change
+                </button>
+              </div>
+            </div>
+            <input #avatarInput type="file" accept="image/*" (change)="onAvatarChange($event)" class="hidden">
+          </div>
+
+          <!-- Profile Info -->
+          <div class="flex-1 w-full md:w-auto">
+            <div *ngIf="!isEditingProfile; else editForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Name</label>
+                  <p class="text-lg font-semibold">{{ userProfile.name || 'Not provided' }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                  <p class="text-lg">{{ userProfile.email }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-300 mb-1">Subscription</label>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                        [ngClass]="userProfile.subscriptionStatus === 'Premium' ? 'bg-red-500/20 text-red-400' : 'bg-slate-600 text-slate-300'">
+                    {{ userProfile.subscriptionStatus }}
+                  </span>
+                </div>
+              </div>
+              <button (click)="toggleEditProfile()"
+                      class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                      aria-label="Edit profile">
+                Edit Profile
+              </button>
+            </div>
+
+            <!-- Edit Form -->
+            <ng-template #editForm>
+              <form (ngSubmit)="saveProfile()" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="edit-name" class="block text-sm font-medium text-slate-300 mb-1">Name</label>
+                    <input id="edit-name" type="text" [(ngModel)]="userProfile.name" name="name"
+                           class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors">
+                  </div>
+                  <div>
+                    <label for="edit-email" class="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                    <input id="edit-email" type="email" [(ngModel)]="userProfile.email" name="email"
+                           class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors">
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <button type="submit"
+                          class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                    Save Changes
+                  </button>
+                  <button type="button" (click)="toggleEditProfile()"
+                          class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Watch History Section -->
+    <section class="mb-12" aria-labelledby="watch-history-heading">
+      <h2 id="watch-history-heading" class="text-2xl font-semibold mb-6 text-red-400">Recently Watched</h2>
+      <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-slate-700">
+        <div class="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide" role="list" aria-label="Watch history">
+          <div *ngFor="let movie of watchHistory; trackBy: trackByMovieId"
+               class="flex-shrink-0 w-48 group cursor-pointer"
+               role="listitem">
+            <div class="relative overflow-hidden rounded-lg shadow-lg group-hover:shadow-2xl transition-shadow duration-300">
+              <img [src]="movie.poster" [alt]="movie.title"
+                   class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-300">
+              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                <h3 class="text-white font-semibold text-lg mb-1">{{ movie.title }}</h3>
+                <div class="flex items-center justify-between">
+                  <span class="text-yellow-400 text-sm">★ {{ movie.rating }}</span>
+                  <span class="text-slate-300 text-sm">{{ movie.year }}</span>
+                </div>
+                <div class="flex gap-2 mt-3">
+                  <button (click)="addToFavorites(movie.id)"
+                          class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                          aria-label="Add to favorites">
+                    ♥ Favorite
+                  </button>
+                  <button (click)="removeFromWatchHistory(movie.id)"
+                          class="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                          aria-label="Remove from history">
+                    ✕ Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="watchHistory.length === 0" class="text-slate-400 text-center py-8">No watch history available</p>
+      </div>
+    </section>
+
+    <!-- My List Section -->
+    <section class="mb-12" aria-labelledby="my-list-heading">
+      <h2 id="my-list-heading" class="text-2xl font-semibold mb-6 text-red-400">My List</h2>
+      <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-slate-700">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div *ngFor="let movie of watchlist; trackBy: trackByMovieId"
+               class="group cursor-pointer"
+               role="listitem">
+            <div class="relative overflow-hidden rounded-lg shadow-lg group-hover:shadow-2xl transition-shadow duration-300">
+              <img [src]="movie.poster" [alt]="movie.title"
+                   class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                <h3 class="text-white font-semibold text-sm mb-1">{{ movie.title }}</h3>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-yellow-400 text-xs">★ {{ movie.rating }}</span>
+                  <span class="text-slate-300 text-xs">{{ movie.year }}</span>
+                </div>
+                <button (click)="removeFromWatchlist(movie.id)"
+                        class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors w-full"
+                        aria-label="Remove from list">
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="watchlist.length === 0" class="text-slate-400 text-center py-8">Your list is empty</p>
+      </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section aria-labelledby="settings-heading">
+      <h2 id="settings-heading" class="text-2xl font-semibold mb-6 text-red-400">Settings</h2>
+      <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 shadow-xl border border-slate-700">
+        <form (ngSubmit)="saveSettings()" class="space-y-6">
+          <!-- Dark Mode Toggle -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-lg font-medium">Dark Mode</label>
+              <p class="text-slate-400 text-sm">Enable dark theme for the application</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [(ngModel)]="settings.darkMode" name="darkMode" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-500/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+            </label>
+          </div>
+
+          <!-- Language Selection -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-lg font-medium">Language</label>
+              <p class="text-slate-400 text-sm">Choose your preferred language</p>
+            </div>
+            <select [(ngModel)]="settings.language" name="language"
+                    class="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors">
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
+
+          <!-- Email Notifications -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-lg font-medium">Email Notifications</label>
+              <p class="text-slate-400 text-sm">Receive updates and recommendations via email</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [(ngModel)]="settings.emailNotifications" name="emailNotifications" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-500/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+            </label>
+          </div>
+
+          <!-- Subscription CTA -->
+          <div *ngIf="userProfile.subscriptionStatus !== 'Premium'" class="bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-red-400 mb-2">Upgrade to Premium</h3>
+            <p class="text-slate-300 mb-4">Get unlimited access to all movies and exclusive content</p>
+            <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+              Upgrade Now
+            </button>
+          </div>
+
+          <!-- Save Button -->
+          <div class="flex justify-end">
+            <button type="submit"
+                    class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200">
+              Save Settings
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Logout Button -->
+    <div class="text-center mt-12">
+      <button (click)="logout()"
+              class="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200 border border-slate-600"
+              aria-label="Logout">
+        Logout
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS for scrollbar hide -->
+<style>
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+</style>

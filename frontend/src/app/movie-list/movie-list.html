@@ -1,0 +1,99 @@
+<app-header></app-header>
+
+<div class="bg-slate-900 text-white">
+  <!-- Featured Section -->
+  <section class="relative bg-gradient-to-r from-slate-800 to-slate-700 py-16 px-4 fade-in-up">
+    <div class="container mx-auto flex flex-col md:flex-row items-center">
+      <div class="md:w-1/2 mb-8 md:mb-0">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 text-red-500">Movie of the Week</h1>
+        <h2 class="text-2xl md:text-3xl font-semibold mb-2">{{ featuredMovies[0].title }}</h2>
+        <p class="text-lg mb-4">{{ featuredMovies[0].description }}</p>
+        <div class="flex items-center mb-4">
+          <span class="text-yellow-400 mr-2">★ {{ featuredMovies[0].rating }}/10</span>
+          <span class="text-gray-300">({{ featuredMovies[0].year }})</span>
+        </div>
+        <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors" (click)="playTrailer(featuredMovies[0])" aria-label="Play trailer for {{ featuredMovies[0].title }}">
+          ▶ Play Trailer
+        </button>
+      </div>
+      <div class="md:w-1/2">
+        <img [src]="featuredMovies[0].poster" alt="{{ featuredMovies[0].title }} poster" class="w-full h-96 object-cover rounded-lg shadow-lg">
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters and Search -->
+  <section class="bg-slate-800 py-6 px-4 sticky top-20 z-10 shadow-lg">
+    <div class="container mx-auto">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <!-- Search -->
+        <div class="flex-1 max-w-md">
+          <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search movies..." class="w-full px-4 py-2 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="Search movies">
+        </div>
+
+        <!-- Genres -->
+        <div class="flex flex-wrap gap-2">
+          <button *ngFor="let genre of genres" (click)="toggleGenre(genre)" [class.active]="selectedGenres.includes(genre)" class="px-3 py-1 rounded-full text-sm font-medium transition-colors {{ selectedGenres.includes(genre) ? 'bg-red-500 text-white' : 'bg-slate-600 text-gray-300 hover:bg-slate-500' }}" [attr.aria-pressed]="selectedGenres.includes(genre)">
+            {{ genre }}
+          </button>
+        </div>
+
+        <!-- Sort -->
+        <select [(ngModel)]="sortBy" (change)="applyFilters()" class="px-3 py-2 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="Sort movies">
+          <option value="title">Title</option>
+          <option value="year">Newest</option>
+          <option value="rating">Highest Rated</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Movie Grid -->
+  <section class="py-8 px-4 fade-in">
+    <div class="container mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+        <div *ngFor="let movie of getPaginatedMovies()" class="group bg-slate-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" tabindex="0" role="article" [attr.aria-label]="'Movie card for ' + movie.title">
+          <div class="relative">
+            <img [src]="movie.poster" [alt]="movie.title + ' poster'" class="w-full h-64 object-cover">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-all duration-300 flex items-center justify-center">
+              <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center p-4">
+                <p class="text-sm mb-4 line-clamp-3">{{ movie.description }}</p>
+                <div class="flex justify-center gap-2">
+                  <button (click)="playTrailer(movie)" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors" aria-label="Play trailer for {{ movie.title }}">
+                    ▶ Trailer
+                  </button>
+                  <button (click)="addToWatchlist(movie)" [disabled]="isInWatchlist(movie)" class="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1 rounded text-sm transition-colors disabled:opacity-50" aria-label="{{ isInWatchlist(movie) ? 'Already in watchlist' : 'Add to watchlist' }}">
+                    {{ isInWatchlist(movie) ? '✓' : '♥' }} Watchlist
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="text-lg font-semibold mb-1 truncate" [title]="movie.title">{{ movie.title }}</h3>
+            <div class="flex justify-between items-center text-sm text-gray-300">
+              <span>{{ movie.year }}</span>
+              <span class="text-yellow-400">★ {{ movie.rating }}</span>
+            </div>
+            <span class="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded mt-2">{{ movie.genre }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-center mt-8" *ngIf="getTotalPages() > 1">
+        <button (click)="prevPage()" [disabled]="currentPage === 1" class="mx-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors" aria-label="Previous page">
+          Previous
+        </button>
+        <span class="mx-4 text-gray-300">Page {{ currentPage }} of {{ getTotalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === getTotalPages()" class="mx-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors" aria-label="Next page">
+          Next
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<app-movie-chat-bubble></app-movie-chat-bubble>
+
+<app-footer></app-footer>

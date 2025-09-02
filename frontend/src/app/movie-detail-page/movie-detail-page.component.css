@@ -1,0 +1,56 @@
+/* Custom styles for Movie Detail Page */
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Text shadow for hero title */
+.text-shadow-lg {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Smooth animations for hover effects */
+.transform {
+  transition: transform 0.3s ease;
+}
+
+/* Ensure responsive video container */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+/* Custom focus styles for accessibility */
+button:focus,
+div[tabindex]:focus {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+}
+
+/* Loading animation for images */
+img {
+  transition: opacity 0.3s ease;
+}
+
+img[loading="lazy"] {
+  opacity: 0;
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
+}
+
+/* TODO: Add more custom animations or styles as needed */
+/* For example, fade-in animations on scroll */
+/* .fade-in {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+} */
