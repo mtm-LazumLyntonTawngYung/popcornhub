@@ -52,6 +52,22 @@ cd frontend
 ng build --prod
 ```
 
+## Docker
+
+To run the application using Docker:
+
+1. Build the Docker image:
+   ```bash
+   docker build -t popcornhub-frontend .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 8080:80 popcornhub-frontend
+   ```
+
+The application will be available at `http://localhost:8080`.
+
 ## Technologies Used
 
 - Angular
