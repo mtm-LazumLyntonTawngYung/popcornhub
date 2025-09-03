@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  apiUrl: 'http://localhost:5000',
   firebase: {
     apiKey: "AIzaSyBNyRMLjI8zXp8ViYtV52QHvSDesuBXm0k",
     authDomain: "popcornhub-28fa4.firebaseapp.com",

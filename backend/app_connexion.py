@@ -2,6 +2,12 @@
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import sys
+import os
+
+# Import the chatbot
+# from chatbot import PopcornHubChatbot
+from chatbot import PopcornHubChatbot
 
 app = Flask(__name__)
 CORS(app)
@@ -126,25 +132,57 @@ def ai_chat():
     if not data or 'message' not in data:
         return jsonify({"error": "Message is required"}), 400
 
-    user_message = data['message'].lower()
+    user_message = data['message']
+
+    # Initialize chatbot
+    bot = PopcornHubChatbot()
+
+    # Get user ID from request (default if not provided)
+    user_id = request.headers.get('X-User-ID', 'default_user')
+
+    # Predict intent and extract entities
+    intent, confidence = bot.predict_intent(user_message)
+    entities = bot.extract_entities(user_message)
+
+    if confidence < 0.6:
+        intent = 'fallback'
+
+    # Get response from chatbot
+    bot_response = bot.get_response(intent, entities, user_message)
+
+    # Update memory
+    bot.update_memory(user_id, intent, entities)
+
+    # Create suggestions based on intent
+    suggestions = []
+    if intent == 'suggest_movie' and 'genre' in entities:
+        # Filter movies by genre
+        genre_movies = [m for m in MOVIES if any(g.lower() == entities['genre'] for g in m['genre'])]
+        if genre_movies:
+            for movie in genre_movies[:3]:  # Limit to 3 suggestions
+                suggestions.append({
+                    "id": movie['id'],
+                    "title": movie['title'],
+                    "poster": movie['poster'],
+                    "year": movie['releaseYear'],
+                    "rating": movie['rating']
+                })
+    elif intent in ['suggest_movie', 'greeting']:
+        # General recommendations
+        top_movies = sorted(MOVIES, key=lambda x: x['rating'], reverse=True)[:3]
+        for movie in top_movies:
+            suggestions.append({
+                "id": movie['id'],
+                "title": movie['title'],
+                "poster": movie['poster'],
+                "year": movie['releaseYear'],
+                "rating": movie['rating']
+            })
 
     response = {
-        "text": "I understand you're looking for movie recommendations. Here are some suggestions:",
-        "suggestions": []
+        "text": bot_response,
+        "suggestions": suggestions
     }
-
-    if 'recommend' in user_message or 'suggest' in user_message:
-        response["suggestions"] = [
-            {"id": 1, "title": "Inception", "poster": "https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception", "year": 2010, "rating": 8.8},
-            {"id": 2, "title": "The Shawshank Redemption", "poster": "https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Shawshank", "year": 1994, "rating": 9.3}
-        ]
-    elif 'action' in user_message:
-        response["text"] = "For action movies, I recommend:"
-        response["suggestions"] = [
-            {"id": 1, "title": "Inception", "poster": "https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception", "year": 2010, "rating": 8.8}
-        ]
-    else:
-        response["text"] = "I'm here to help with movie recommendations! Try asking for recommendations or search for specific genres."
 
     return jsonify(response)
 

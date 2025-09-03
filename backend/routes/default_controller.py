@@ -3,6 +3,11 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 from typing import List
+import sys
+import os
+
+# Add chatbot directory to path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'chatbot'))
 
 from models.ai_chat_post_request import AiChatPostRequest  # noqa: E501
 from models.chat_response import ChatResponse  # noqa: E501
@@ -15,6 +20,7 @@ from models.watchlist_post200_response import WatchlistPost200Response  # noqa: 
 from models.watchlist_request import WatchlistRequest  # noqa: E501
 from models.cast_member import CastMember
 from models.related_movie import RelatedMovie
+from chatbot.chatbot import PopcornHubChatbot
 
 # Mock movie data - in production, this would come from a database
 MOVIES = [
@@ -75,26 +81,67 @@ def ai_chat_post(body):  # noqa: E501
     """
     ai_chat_post_request = AiChatPostRequest.from_dict(body) if isinstance(body, dict) else body
 
-    user_message = ai_chat_post_request.message.lower()
+    user_message = ai_chat_post_request.message
 
-    # Simple AI logic - in production, integrate with OpenAI or similar
-    response = ChatResponse(
-        text="I understand you're looking for movie recommendations. Here are some suggestions:",
-        suggestions=[]
-    )
+    # Change to chatbot directory for file access
+    original_cwd = os.getcwd()
+    chatbot_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'chatbot')
+    os.chdir(chatbot_dir)
 
-    if 'recommend' in user_message or 'suggest' in user_message:
-        response.suggestions = [
-            MovieSuggestion(id=1, title="Inception", poster="https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception", year=2010, rating=8.8),
-            MovieSuggestion(id=2, title="The Shawshank Redemption", poster="https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Shawshank", year=1994, rating=9.3)
-        ]
-    elif 'action' in user_message:
-        response.text = "For action movies, I recommend:"
-        response.suggestions = [
-            MovieSuggestion(id=1, title="Inception", poster="https://via.placeholder.com/100x150/1a1a1a/ffffff?text=Inception", year=2010, rating=8.8)
-        ]
-    else:
-        response.text = "I'm here to help with movie recommendations! Try asking for recommendations or search for specific genres."
+    try:
+        # Initialize chatbot
+        bot = PopcornHubChatbot()
+
+        # Get user ID from request (default if not provided)
+        user_id = connexion.request.headers.get('X-User-ID', 'default_user')
+
+        # Predict intent and extract entities
+        intent, confidence = bot.predict_intent(user_message)
+        entities = bot.extract_entities(user_message)
+
+        if confidence < 0.6:
+            intent = 'fallback'
+
+        # Get response from chatbot
+        bot_response = bot.get_response(intent, entities, user_message)
+
+        # Update memory
+        bot.update_memory(user_id, intent, entities)
+
+        # Create suggestions based on intent
+        suggestions = []
+        if intent == 'suggest_movie' and 'genre' in entities:
+            # Filter movies by genre
+            genre_movies = [m for m in MOVIES if any(g.lower() == entities['genre'] for g in m.genre)]
+            if genre_movies:
+                for movie in genre_movies[:3]:  # Limit to 3 suggestions
+                    suggestions.append(MovieSuggestion(
+                        id=movie.id,
+                        title=movie.title,
+                        poster=movie.poster,
+                        year=movie.release_year,
+                        rating=movie.rating
+                    ))
+        elif intent in ['suggest_movie', 'greeting']:
+            # General recommendations
+            top_movies = sorted(MOVIES, key=lambda x: x.rating, reverse=True)[:3]
+            for movie in top_movies:
+                suggestions.append(MovieSuggestion(
+                    id=movie.id,
+                    title=movie.title,
+                    poster=movie.poster,
+                    year=movie.release_year,
+                    rating=movie.rating
+                ))
+
+        response = ChatResponse(
+            text=bot_response,
+            suggestions=suggestions
+        )
+
+    finally:
+        # Restore original working directory
+        os.chdir(original_cwd)
 
     return response
 

@@ -1,0 +1,47 @@
+[
+  {
+    "tag": "greeting",
+    "patterns": ["hello", "hi", "hey", "good morning", "good evening"],
+    "responses": ["Hello! Ready for a movie night?", "Hi there! Let's plan our watch party.", "Hey! What can I help you with today?"]
+  },
+  {
+    "tag": "suggest_movie",
+    "patterns": ["suggest a movie", "what should we watch", "movie for tonight", "recommend a film", "what movie"],
+    "responses": ["How about a romantic comedy? Try 'Crazy Rich Asians'.", "If you want horror, 'The Conjuring' is a solid pick.", "For action, 'John Wick' is exciting!", "A classic like 'The Shawshank Redemption' never fails."]
+  },
+  {
+    "tag": "schedule_watch",
+    "patterns": ["schedule a watch", "set up a time", "plan movie time", "when to watch"],
+    "responses": ["Sure! What time and date works for you?", "Let's set a time. Please provide the date and time in your timezone."]
+  },
+  {
+    "tag": "start_watch_party",
+    "patterns": ["start watch party", "create session", "begin movie night", "share link"],
+    "responses": ["Great! Here's your shareable link: https://popcornhub.com/watch/{session_id}", "Watch party started! Share this link with your friends."]
+  },
+  {
+    "tag": "set_reminder",
+    "patterns": ["set reminder", "remind me", "notify before"],
+    "responses": ["Reminder set! I'll notify you 30 minutes before.", "Got it! You'll get a reminder at the scheduled time."]
+  },
+  {
+    "tag": "suggest_snacks",
+    "patterns": ["suggest snacks", "what to eat", "snacks for movie", "drinks"],
+    "responses": ["Popcorn and soda are classics!", "Try pizza and wine for a cozy night.", "How about chocolate and chips?"]
+  },
+  {
+    "tag": "icebreaker",
+    "patterns": ["icebreaker", "fun questions", "games", "conversation starters"],
+    "responses": ["What's your favorite movie memory?", "If you could live in any movie world, which one?", "What's the funniest movie you've seen?"]
+  },
+  {
+    "tag": "goodbye",
+    "patterns": ["bye", "goodbye", "see you", "thanks"],
+    "responses": ["Goodbye! Enjoy your movie night.", "See you later! Have fun watching.", "Thanks for chatting! Bye."]
+  },
+  {
+    "tag": "fallback",
+    "patterns": [],
+    "responses": ["I'm not sure I understand. Can you rephrase?", "Sorry, I didn't catch that. Try asking about movies or scheduling."]
+  }
+]
